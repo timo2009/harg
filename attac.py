@@ -120,7 +120,7 @@ def print_log(progress, start_time, duration):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Multilayer DDoS Test Tool (nur für legale Zwecke!)")
+    parser = argparse.ArgumentParser(description="Multilayer DDoS Test Tool (only for legal use!) | Please run with sudo to use layer 4")
     parser.add_argument("target", help="Ziel-IP oder Hostname")
     parser.add_argument("--port", type=int, default=80, help="Zielport (Standard: 80)")
     parser.add_argument("--layer", required=True, help="Layer angeben: 3,4,6,7 oder 'all'")
