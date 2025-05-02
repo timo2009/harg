@@ -143,7 +143,7 @@ def check_server_status_periodically(target_ip, stop_event, start_time):
                 "time": time_str
             })
 
-        time.sleep(1)  # prüfe jede Sekunde
+        time.sleep(1)
 
 
 if __name__ == "__main__":
