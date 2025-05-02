@@ -90,15 +90,8 @@ def display_status(progress, start_time, duration, monitor_layer7, target_ip):
         else:
             rem_str = "unendlich"
 
-        server_status = ""
-        if monitor_layer7:
-            if progress['layer7'] == prev_layer7:
-                server_status = "Server: [31mDOWN[0m"
-            else:
-                server_status = "Server: [32mONLINE[0m"
-            prev_layer7 = progress['layer7']
-        else:
-            server_status = f"Server: {server_status_global}"
+
+        server_status = f"Server: {server_status_global}"
 
 
         output = (
@@ -111,12 +104,13 @@ def display_status(progress, start_time, duration, monitor_layer7, target_ip):
 
 
 def print_log(progress, start_time, duration):
+    global server_status_global
     elapsed = int(time.time() - start_time)
     hours, remainder = divmod(elapsed, 3600)
     minutes, seconds = divmod(remainder, 60)
     time_str = f"{hours:02}:{minutes:02}:{seconds:02}"
 
-    print(f"\n\n[Endstatus nach {time_str}]:")
+    print(f"\n\n[Endstatus nach {time_str}]: {server_status_global}")
     print(f"  Layer 3 (ICMP): {progress['layer3']} Pakete")
     print(f"  Layer 4 (TCP SYN): {progress['layer4_tcp']} Pakete")
     print(f"  Layer 4 (UDP): {progress['layer4_udp']} Pakete")
