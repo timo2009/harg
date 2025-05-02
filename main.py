@@ -46,6 +46,9 @@ def main():
     print("HARG.14 by Timo Streich")
     print("\nstart running")
 
+    for i in range(0,10):
+        print(generate_random_id())
+
     check_network()
 
     # ID abrufen oder generieren
