@@ -10,7 +10,7 @@ import time
 import requests
 from scapy.all import IP, TCP, ICMP, send
 
-server_status_global = "Unbekannt"
+server_status_global = "Unknown"
 server_status_global_array = []
 
 
@@ -91,12 +91,12 @@ def display_status(progress, start_time, duration):
             rm, rs = divmod(rr, 60)
             rem_str = f"{rh:02}:{rm:02}:{rs:02}"
         else:
-            rem_str = "unendlich"
+            rem_str = "infinite"
 
         server_status = f"Server: {server_status_global}"
 
         output = (
-            f"\r[Dauer: {time_str} | Verbleibend: {rem_str}] "
+            f"\r[Duration: {time_str} | Remaining: {rem_str}] "
             f"ICMP: {progress['layer3']} | TCP: {progress['layer4_tcp']} | UDP: {progress['layer4_udp']} | "
             f"TLS: {progress['layer6']} | HTTP: {progress['layer7']} | {server_status}"
         )
@@ -111,12 +111,12 @@ def print_log(progress, start_time):
     minutes, seconds = divmod(remainder, 60)
     time_str = f"{hours:02}:{minutes:02}:{seconds:02}"
 
-    print(f"\n\n[Endstatus nach {time_str}]: {server_status_global}")
-    print(f"  Layer 3 (ICMP): {progress['layer3']} Pakete")
-    print(f"  Layer 4 (TCP SYN): {progress['layer4_tcp']} Pakete")
-    print(f"  Layer 4 (UDP): {progress['layer4_udp']} Pakete")
-    print(f"  Layer 6 (TLS Handshake): {progress['layer6']} Verbindungen")
-    print(f"  Layer 7 (HTTP GET): {progress['layer7']} Anfragen")
+    print(f"\n\n[End status after {time_str}]: {server_status_global}")
+    print(f"  Layer 3 (ICMP): {progress['layer3']} packets")
+    print(f"  Layer 4 (TCP SYN): {progress['layer4_tcp']} packets")
+    print(f"  Layer 4 (UDP): {progress['layer4_udp']} packets")
+    print(f"  Layer 6 (TLS Handshake): {progress['layer6']} connections")
+    print(f"  Layer 7 (HTTP GET): {progress['layer7']} requests")
 
     print("\n\nServer Access:")
     for i in server_status_global_array:
@@ -151,27 +151,35 @@ def hash_password(password):
 
 
 if __name__ == "__main__":
+    print("          ____    _____  ______")
+    print("|   |     /  \\    |   |  |")
+    print("|___|    /    \\   |---|  | ____")
+    print("|   |   /------\\  |   \\  |    |")
+    print("|   |  /        \\ |    \\ |____|")
+    print("________________________________")
+    print("HARG.1 by Timo Streich")
+
     parser = argparse.ArgumentParser(
         description="Multilayer DDoS Test Tool (only for legal use!) | Please run with sudo to use layer 4")
-    parser.add_argument("target", help="Ziel-IP oder Hostname")
-    parser.add_argument("--port", type=int, default=80, help="Zielport (Standard: 80)")
-    parser.add_argument("--layer", required=True, help="Layer angeben: 3,4,6,7 oder 'all'")
-    parser.add_argument("--threads", type=int, default=50, help="Anzahl Threads")
-    parser.add_argument("--duration", type=int, help="Dauer des Angriffs in Sekunden")
+    parser.add_argument("target", help="Target IP or Hostname")
+    parser.add_argument("--port", type=int, default=80, help="Target port (default: 80)")
+    parser.add_argument("--layer", required=True, help="Specify layers: 3,4,6,7 or 'all'")
+    parser.add_argument("--threads", type=int, default=50, help="Number of threads")
+    parser.add_argument("--duration", type=int, help="Duration of the attack in seconds")
     args = parser.parse_args()
 
     layers = args.layer.split(",") if args.layer != "all" else ["3", "4", "6", "7"]
 
     STORED_PASSWORD_HASH = "4abf5fcdc342a219232f1b40c24aadbe59457011573e1b15a1c30a65d9fe3356"
     while True:
-        user_input = getpass.getpass("Bitte Script-Passwort eingeben: ")
+        user_input = getpass.getpass("Please enter the script password: ")
         if hash_password(user_input) == STORED_PASSWORD_HASH:
             break
         else:
-            print("Falsches Passwort! Versuche es erneut...")
+            print("Incorrect password! Try again...")
 
     print(
-        f"\n[!] Angriff gestartet auf {args.target}:{args.port} | Layer: {','.join(layers)} | Threads: {args.threads} | Dauer: {args.duration if args.duration else 'unendlich'} Sekunden\n"
+        f"\n[!] Attack started on {args.target}:{args.port} | Layers: {','.join(layers)} | Threads: {args.threads} | Duration: {args.duration if args.duration else 'infinite'} seconds\n"
     )
 
     progress = {
@@ -201,12 +209,12 @@ if __name__ == "__main__":
         display.start()
         display.join()
 
-        print("\n[!] Angriff beendet.")
+        print("\n[!] Attack finished.")
         print_log(progress, start_time)
 
     except KeyboardInterrupt:
-        print("\n[!] KeyboardInterrupt: Angriff abgebrochen durch Benutzer.")
+        print("\n[!] KeyboardInterrupt: Attack interrupted by user.")
         print_log(progress, start_time)
-        print("\n[!] Angriff beendet.")
+        print("\n[!] Attack finished.")
         stop_event.set()
         server_monitor.join()
