@@ -160,7 +160,7 @@ if __name__ == "__main__":
     print("HARG.1 by Timo Streich")
 
     parser = argparse.ArgumentParser(
-        description="Multilayer DDoS Test Tool (only for legal use!) | Please run with sudo to use layer 4")
+        description="Multilayer DoS Test Tool (only for legal use!) | Please run with sudo to use layer 4")
     parser.add_argument("target", help="Target IP or Hostname")
     parser.add_argument("--port", type=int, default=80, help="Target port (default: 80)")
     parser.add_argument("--layer", required=True, help="Specify layers: 3,4,6,7 or 'all'")
