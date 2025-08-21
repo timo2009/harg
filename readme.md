@@ -1,6 +1,6 @@
-# HARG - Multilayer DDoS Testing Script (For Legal Use Only :-)
+# HARG - Multilayer DoS Testing Script (For Legal Use Only :-)
 
-**HARG** (High-Availability Resilience Grinder) is a Python-based tool that simulates Denial-of-Service (DoS/DDoS) conditions across multiple OSI layers. It is designed for **authorized testing**, **security research**, and **educational use only**.
+**HARG** (High-Availability Resilience Grinder) is a Python-based tool that simulates Denial-of-Service (DoS/DoS) conditions across multiple OSI layers. It is designed for **authorized testing**, **security research**, and **educational use only**.
 
 > ⚠️ **LEGAL WARNING**: This tool must **only** be used on systems you **own** or have **explicit written permission** to test. Unauthorized use is **illegal** and can result in criminal prosecution.
 
